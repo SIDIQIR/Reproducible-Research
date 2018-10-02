@@ -1,0 +1,116 @@
+---
+title: "Personal Activity analyzer"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+#Loading and preprocessing the data
+
+```{r }
+setwd("C:\\Coursera\\DATA_SCIENCE\\Reproducible Research")
+getwd()
+
+zipF1<- "C:\\Coursera\\DATA_SCIENCE\\Reproducible Research\\activity.zip"
+ractivity <- read.csv("activity.csv", header = TRUE)
+```
+#What is mean total number of steps taken per day?
+
+
+```{r}
+sums <- tapply(ractivity$steps, ractivity$date, sum)
+
+
+hist(sums, breaks = 6, col = "green", xlab = "Steps", 
+     main = "Total steps")
+#Mean value
+mean(sums,na.rm = TRUE)
+#Median value
+median(sums, na.rm = TRUE)
+
+```
+#What is the average daily activity pattern?
+Making a time series plot 
+
+```{r}
+
+means <- tapply(ractivity$steps, ractivity$interval, mean, na.rm = TRUE, simplify = T)
+
+averages <- as.numeric(names(means))
+
+plot(averages,means, type  = "l", col = "blue", xlab = "5-minute interval", ylab = "average steps across all the days")
+```
+
+#Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
+```{r}
+
+maxval <- sort(means, decreasing = TRUE)
+maxval[1]
+#max number of step 206.17 on the 835th interval
+```
+
+
+#Imputing missing values
+Creating new data set without NA values
+
+
+What is the average daily activity pattern?
+Make a time series plot 
+
+```{r}
+
+newdata <- ractivity
+
+for(i in 1:ncol(newdata)){
+  newdata[is.na(newdata[,i]),i] <- mean(newdata[,i], na.rm = TRUE)
+}
+```
+#Number of missing values between old data set and new
+```{r}
+sum(is.na(ractivity))
+sum(is.na(newdata))
+head(ractivity)
+head(newdata)
+
+
+newstat <- tapply(as.numeric(newdata$steps), newdata$date,sum)
+hist(newstat, main = "Steps per day without missing values")
+mean(newstat, na.rm = TRUE)
+median(newstat, na.rm = TRUE)
+```
+#Are there differences in activity patterns between weekdays and weekends?
+
+Adding a column with days
+```{r}
+newdata$Week_Day<- format(as.Date(newdata$date), format = "%A")
+```
+Weekday activity
+```{r}
+weekday <- subset(newdata,newdata$Week_Day != c("Sunday","Saturday"))
+head(weekday)
+tail(weekday)
+```
+
+Weekend activity
+```{r}
+weekend <- subset(newdata,newdata$Week_Day == c("Sunday","Saturday"))
+head(weekend)
+tail(weekend)
+```
+Weekday plot
+```{r}
+meanweekday <- tapply(weekday$steps, weekday$interval, mean, na.rm = TRUE) 
+meanweekday1 <- as.numeric(names(meanweekday))
+plot (meanweekday1, meanweekday, type = "l", col = "red", main = "Weekday activity" )
+```
+Weekend Plot
+```{r}
+meanweekend <- tapply(weekend$steps, weekend$interval, mean, na.rm = TRUE) 
+meanweekend1 <- as.numeric(names(meanweekend))
+plot (meanweekend1, meanweekend, type = "l", col = "blue",main = "Weekend activity"  )
+
+```
+
